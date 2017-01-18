@@ -25,7 +25,7 @@ The goals / steps of this project are the following:
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [video1]: ./project_video.mp4 "Fit Visual"
 
-## [Rubric](https://review.udacity.com/#!/rubrics/476/view) Points
+## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
