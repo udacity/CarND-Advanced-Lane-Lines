@@ -23,7 +23,8 @@ The goals / steps of this project are the following:
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
 [image4]: ./examples/warped_straight_lines.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[video1]: ./project_video.mp4 "Fit Visual"
+[image6]: ./examples/example_output.jpg "Output"
+[video1]: ./project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -95,6 +96,12 @@ Then I did some other stuff and fit my lane lines with a 2nd order polynomial ki
 ####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
 I did this in lines # through # in my code in `my_other_file.py`
+
+####6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+
+I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+
+![alt text][image6]
 
 ---
 
