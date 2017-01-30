@@ -18,8 +18,8 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
+[image1]: ./camera_cal/calibration1.jpg "Original Chessboard"
+[image2]: camera_cal/test_undist.jpg "Undistorted Chessboard"
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
 [image4]: ./examples/warped_straight_lines.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
@@ -48,20 +48,30 @@ The code used to compute the camera matrix and distortion coefficients can be fo
 
 The resulting distortion is demonstrated below:
 
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
-
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
-
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
-
 ![alt text][image1]
+![alt text] [image2]
 
 ###Pipeline (single images)
 
 ####1. Provide an example of a distortion-corrected image.
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+Here's an example of the distortion correction applied to one of the test images:
+
+![alt text][image3]
 ####2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+
+I chose to apply a few filters and gradients to create a threshold binary image:
+
+1. HLS Filter ("video_pipeline.py" lines 109 - 122): I strongly relied on two HLS filters, one for yellow and one for white, to identify the lane lines. I attempted to give each HLS filter a reasonable range of the color space for the given type of line.
+
+|   |Yellow(min,max)| White(min,max)| 
+|:-:|:-------------:|:-------------:| 
+| H | 585, 460      | 320, 0        | 
+| L | 203, 720      | 320, 720      |
+| S | 1127, 720     | 960, 720      |
+
+X Direction Sobel Gradient ("video_pipeline.py" lines 40 - 60): I applied a gradient threshold in the x direction
+
+
 I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
 
 ![alt text][image3]
