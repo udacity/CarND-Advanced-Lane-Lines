@@ -25,6 +25,7 @@ The goals / steps of this project are the following:
 [image5]: ./test_images/test6.jpg "Original Image"
 [image6]: ./histogram_mask.jpg "Histogram Mask"
 [image7]: ./curve_fitting.jpg "Curve Fitting"
+[image8]: ./result.jpg "Result"
 [video1]: ./project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
@@ -90,19 +91,21 @@ I used moving histogram windows to identify lane line pixels within the image (l
 
 ![alt text][image6]
 
-Once I had my lane-line pixels, I fit a second order polynomial to the left and right lane points separately (lines 214 - 267 of video_pipeline.py"). Here's an example of the resulting polynomial:
+Once I had my lane-line pixels, I fit a second order polynomial to the left and right lane points separately (lines 214 - 267 of "video_pipeline.py"). Here's an example of the resulting polynomial:
 
 ![alt text][image7]
 
 ####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+I calculated the radius of curvature of the lane in lines 269 - 277 of "video_pipeline.py". Since the left and right lanes have different curvatures, I decided to estimate a center curvature for the lane. I did this by calculating the midpoint between the lanes at three points, and then fitting a second order polynomial to these midpoints. I then used the midpoint polynomial in the standard radius of curvature calculation.
+
+I calculate the position of the vehicle with respect to the center of the lane in lines 279 - 283 of "vehicle_pipeline.py". The first step was to calculate the center of the vehicle. I assumed that the camera was mounted in the center of the vehicle, and therefore the center of the vehicle was the center of the original image. I then drew a line in the original image and performed the perspective transform to see where the center of the vehicle was in the top down view. I used the pixel value for the warped center location at the bottom of the image (closest to the car) as my starting point. In order to calculate the offset, I compared my estimated left lane line location at the bottom of the image to my warped center location less half the width of the lane line.
 
 ####6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I transformed my projection back to the original perspective in lines 285 - 300 of "video_pipeline.py". Here's what the final result looks like:
 
-![alt text][image6]
+![alt text][image8]
 
 ---
 
@@ -118,5 +121,6 @@ Here's a [link to my video result](./project_video.mp4)
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
+I think my project relies too heavily on my HLS filter to identify lane lines. This works very well for the project viedo, but doesn't work well for the challenge videos. I would like to explore sobel filtering in color spaces other than RGB to see if that helps provide more information. I also have limited post post processing in my pipeline. I could incorporate a simple low pass filter to improve smoothness and reject help reject noise in the image. Again, this doesn't have an effect on the project video but would help with the challenges.
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
 
