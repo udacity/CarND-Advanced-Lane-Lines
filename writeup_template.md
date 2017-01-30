@@ -19,11 +19,12 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 
 [image1]: ./camera_cal/calibration1.jpg "Original Chessboard"
-[image2]: camera_cal/test_undist.jpg "Undistorted Chessboard"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
+[image2]: ./camera_cal/test_undist.jpg "Undistorted Chessboard"
+[image3]: ./top_down.jpg "Top Down View"
+[image4]: ./combined_binary.jpg "Binary Mask"
+[image5]: ./test_images/test6.jpg "Original Image"
+[image6]: ./histogram_mask.jpg "Histogram Mask"
+[image7]: ./curve_fitting.jpg "Curve Fitting"
 [video1]: ./project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
@@ -49,7 +50,7 @@ The code used to compute the camera matrix and distortion coefficients can be fo
 The resulting distortion is demonstrated below:
 
 ![alt text][image1]
-![alt text] [image2]
+![alt text][image2]
 
 ###Pipeline (single images)
 
@@ -61,56 +62,37 @@ Here's an example of the distortion correction applied to one of the test images
 
 I chose to apply a few filters and gradients to create a threshold binary image:
 
-1. HLS Filter ("video_pipeline.py" lines 109 - 122): I strongly relied on two HLS filters, one for yellow and one for white, to identify the lane lines. I attempted to give each HLS filter a reasonable range of the color space for the given type of line.
+1. HLS Filter (function "hls_select" in "video_pipeline.py", lines 109 - 122): I strongly relied on two HLS filters, one for yellow and one for white, to identify the lane lines. I attempted to give each HLS filter a reasonable range of the color space for the given type of line.
 
-|   |Yellow(min,max)| White(min,max)| 
-|:-:|:-------------:|:-------------:| 
-| H | 585, 460      | 320, 0        | 
-| L | 203, 720      | 320, 720      |
-| S | 1127, 720     | 960, 720      |
+|   |Yellow (min,max)| White (min,max)| 
+|:-:|:--------------:|:--------------:| 
+| H | (15, 50)       | (0,255)        | 
+| L | (140, 190)     | (200, 255)     |
+| S | (100, 255)     | (0, 255)       |
 
-X Direction Sobel Gradient ("video_pipeline.py" lines 40 - 60): I applied a gradient threshold in the x direction
+2. X and Y Direction Sobel Gradient (function "abs_sobel_thresh" in "video_pipeline.py", lines 40 - 60): I applied a gradient threshold in the x and y direction separately to attempt to identify strong indications of a line that were missed by my color filter. 
 
-
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+A pixel was "true" in the binary image if it (passed the yellow filter) OR (passed the white filter) OR (passed the X Sobel gradient AND the Y Sobel gradient filters).  Here is an example of the original top down image and the resulting binary:
 
 ![alt text][image3]
+![alt text][image4]
 
 ####3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+I used the perspective transform discussed above to transform the original image into a top down view in the function "unwrap", lines 16-37 of "video_pipeline.py". In order to do this, I manually selected points on the image corresponding to a straight freeway section for my source points, and arbitratily created destination points to make the top down view a reasonable size. These values can be found in lines 21 - 31 of "video_pipeline.py". Note that different videos and images might require different source points. Here's an example of the image transformation: 
 
-```
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
-
-```
-This resulted in the following source and destination points:
-
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
-
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
-
+![alt text][image5]
 ![alt text][image4]
 
 ####4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+I used moving histogram windows to identify lane line pixels within the image (lines 183 - 211 of "video_pipeline.py"). Each histogram consisted of half of the image, and the window moved in 1/8 of the image increments until it reached the top of the image. Within each histogram, I identified the maximum value on the left half and right half of the image and built a mask around these values. Once I had completed this for the entire image, I could combine this mask with the thresholded binary image to identify lane line pixels. Below is an example of an overlay of the two masks. The threshold binary image is white and the histogram mask is the red overlay.
 
-![alt text][image5]
+![alt text][image6]
+
+Once I had my lane-line pixels, I fit a second order polynomial to the left and right lane points separately (lines 214 - 267 of video_pipeline.py"). Here's an example of the resulting polynomial:
+
+![alt text][image7]
 
 ####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
