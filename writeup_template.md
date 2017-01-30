@@ -27,7 +27,7 @@ The goals / steps of this project are the following:
 [video1]: ./project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+###Below is a discussion of each of the rubic points for the project.  
 
 ---
 ###Writeup / README
@@ -38,6 +38,15 @@ You're reading it!
 ###Camera Calibration
 
 ####1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
+
+The code used to compute the camera matrix and distortion coefficients can be found in the file "calibration.py". Here are the steps:
+
+1. Create a matrix of 6x9 object points which will represent the (x,y,z=0) coordinates of the calibration chessboards.
+2. Use the openCV function "findChessboardCorners" to identify each chessboard corner, and append the image and real wolrd coordinates of the corner to a multi-dimensional arrays consisting of an array of coordinates for each image.
+3. Repeat for each calibration image
+4. Once the corners have been identified in each image, calculate the camera matrix and distortion coefficients by feeding the image and real world arrays into the cv2.calibrateCamera function.
+
+The resulting distortion is demonstrated below:
 
 The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
 
