@@ -50,7 +50,10 @@ The code used to compute the camera matrix and distortion coefficients can be fo
 
 The resulting distortion is demonstrated below:
 
+Original Chessboard
 ![alt text][image1]
+
+Undistorted Chessboard
 ![alt text][image2]
 
 ###Pipeline (single images)
