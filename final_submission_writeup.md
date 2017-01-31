@@ -26,7 +26,7 @@ The goals / steps of this project are the following:
 [image6]: ./histogram_mask.jpg "Histogram Mask"
 [image7]: ./curve_fitting.jpg "Curve Fitting"
 [image8]: ./result.jpg "Result"
-[video1]: ./project_video.mp4 "Video"
+[video1]: ./project_video_labeled.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Below is a discussion of each of the rubic points for the project.  
@@ -86,7 +86,7 @@ A pixel was "true" in the binary image if it (passed the yellow filter) OR (pass
 I used the perspective transform discussed above to transform the original image into a top down view in the function "unwrap", lines 16-37 of "video_pipeline.py". In order to do this, I manually selected points on the image corresponding to a straight freeway section for my source points, and arbitratily created destination points to make the top down view a reasonable size. These values can be found in lines 21 - 31 of "video_pipeline.py". Note that different videos and images might require different source points. Here's an example of the image transformation: 
 
 ![alt text][image5]
-![alt text][image4]
+![alt text][image3]
 
 ####4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
