@@ -19,14 +19,14 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 
 [image1]: ./camera_cal/calibration1.jpg "Original Chessboard"
-[image2]: ./camera_cal/test_undist.jpg "Undistorted Chessboard"
-[image3]: ./top_down.jpg "Top Down View"
-[image4]: ./combined_binary.jpg "Binary Mask"
-[image5]: ./test_images/test6.jpg "Original Image"
-[image6]: ./histogram_mask.jpg "Histogram Mask"
-[image7]: ./curve_fitting.jpg "Curve Fitting"
-[image8]: ./result.jpg "Result"
-[video1]: ./project_video_labeled.mp4 "Video"
+[image2]: ./output_submission/test_undist.jpg "Undistorted Chessboard"
+[image3]: ./output_submission/top_down.jpg "Top Down View"
+[image4]: ./output_submission/combined_binary.jpg "Binary Mask"
+[image5]: ./output_submission/original.jpg "Original Image"
+[image6]: ./output_submission/histogram_mask.jpg "Histogram Mask"
+[image7]: ./output_submission/curve_fitting.jpg "Curve Fitting"
+[image8]: ./output_submission/result.jpg "Result"
+[video1]: ./output_submission/project_video_labeled.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Below is a discussion of each of the rubic points for the project.  
