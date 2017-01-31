@@ -143,7 +143,7 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
             cv2.line(img, (x1, y1), (x2, y2), color, thickness)
 
 
-def get_transformation_source(h, w, left=0.447, right=0.555, top=0.65, bottom=1):
+def get_transformation_source(h, w, left=0.465, right=0.535, top=0.625, bottom=1):
     top_left = [w * left, h * top, ]
     top_right = [w * right, h * top]
     bottom_left = [w * 0.16, h * bottom]
