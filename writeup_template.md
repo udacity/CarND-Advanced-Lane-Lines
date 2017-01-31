@@ -121,6 +121,6 @@ Here's a [link to my video result](./project_video.mp4)
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-I think my project relies too heavily on my HLS filter to identify lane lines. This works very well for the project viedo, but doesn't work well for the challenge videos. I would like to explore sobel filtering in color spaces other than RGB to see if that helps provide more information. I also have limited post post processing in my pipeline. I could incorporate a simple low pass filter to improve smoothness and reject help reject noise in the image. Again, this doesn't have an effect on the project video but would help with the challenges.
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+I think my project relies too heavily on my HLS filter. This works very well for the project viedo, but doesn't work well for the challenge videos. I would like to explore sobel filtering in color spaces other than RGB to see if that helps provide more information. I also have limited post post processing in my pipeline. I could incorporate a simple low pass filter to improve smoothness and reject help reject noise in the image. Again, this doesn't have an effect on the project video but would help with the challenges.
+
 
