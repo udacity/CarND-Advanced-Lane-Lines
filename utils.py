@@ -50,9 +50,10 @@ def get_scaled_sobel(img, orient='x', sobel_kernel=3):
     return sobel
 
 
-def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=[0, 255]):
+def abs_sobel_threshold(img, orient='x', sobel_kernel=3, thresh=[0, 255]):
     sobel = get_scaled_sobel(img, orient, sobel_kernel)
     return apply_threshold(sobel, thresh)
+
 
 
 def mag_thresh(img, sobel_kernel, thresh=[0, 255]):
@@ -83,6 +84,7 @@ def color_thresh(img, s_thresh=(170, 255)):
 
     s_binary = apply_threshold(s_channel, s_thresh)
     return s_binary
+
 
 def load_image(path):
     img = cv2.imread(path)
@@ -119,21 +121,6 @@ def region_of_interest(img, vertices):
     return masked_image
 
 
-def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
-    """
-    `img` is the output of the hough_lines(), An image with lines drawn on it.
-    Should be a blank image (all black) with lines drawn on it.
-
-    `initial_img` should be the image before any processing.
-
-    The result image is computed as follows:
-
-    initial_img * α + img * β + λ
-    NOTE: initial_img and img must be the same shape!
-    """
-    return cv2.addWeighted(initial_img, α, img, β, λ)
-
-
 def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
     """
     NOTE: this is the function you might want to use as a starting point once you want to
@@ -154,3 +141,71 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
     for line in lines:
         for x1, y1, x2, y2 in line:
             cv2.line(img, (x1, y1), (x2, y2), color, thickness)
+
+
+def get_transformation_source(h, w, left=0.447, right=0.555, top=0.65, bottom=1):
+    top_left = [w * left, h * top, ]
+    top_right = [w * right, h * top]
+    bottom_left = [w * 0.16, h * bottom]
+    bottom_right = [w * 0.86, h * bottom]
+    return np.array([top_left, bottom_left, bottom_right, top_right], np.float32)
+
+
+def get_transformation_destination(h, w):
+    top_left = [w * 0.25, 0]
+    top_right = [w * 0.75, 0]
+    bottom_left = [w * 0.25, h]
+    bottom_right = [w * 0.75, h]
+    return np.array([top_left, bottom_left, bottom_right, top_right], np.float32)
+
+
+def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
+    """
+    `img` should be a blank image (all black).
+
+    `initial_img` should be the image before any processing.
+
+    The result image is computed as follows:
+
+    initial_img * α + img * β + λ
+    NOTE: initial_img and img must be the same shape!
+    """
+    return cv2.addWeighted(initial_img, α, img, β, λ)
+
+
+def perspective_transform(img, src, dst):
+    M = cv2.getPerspectiveTransform(src, dst)
+    return cv2.warpPerspective(img, M, (img.shape[1],img.shape[0]), flags=cv2.INTER_LINEAR)
+
+
+def convert_to_birds_eye_view(img):
+    h, w = img.shape[:2]
+
+    src = get_transformation_source(h, w)
+    dest = get_transformation_destination(h, w)
+
+    img = perspective_transform(img, src, dest)
+
+    return img, src, dest
+
+
+def color_threshold(img, channel, thresh=(0, 255)):
+    if channel == 'R':
+        color_mask = img[:, :, 0]
+    elif channel == 'G':
+        color_mask = img[:, :, 1]
+    elif channel == 'B':
+        color_mask = img[:, :, 2]
+    elif channel == 'H':
+        hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        color_mask = hls[:, :, 0]
+    elif channel == 'L':
+        hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        color_mask = hls[:, :, 1]
+    elif channel == 'S':
+        hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        color_mask = hls[:, :, 2]
+    else:
+        color_mask = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+    return apply_threshold(color_mask, thresh)
