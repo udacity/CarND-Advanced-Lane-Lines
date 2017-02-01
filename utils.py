@@ -76,16 +76,6 @@ def dir_thresh(img, sobel_kernel, thresh=[0, np.pi / 2]):
     return apply_threshold(abs_dir, thresh)
 
 
-def color_thresh(img, s_thresh=(170, 255)):
-    # Convert to HSV color space and separate the V channel
-    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HLS).astype(np.float)
-    l_channel = hsv[:, :, 1]
-    s_channel = hsv[:, :, 2]
-
-    s_binary = apply_threshold(s_channel, s_thresh)
-    return s_binary
-
-
 def load_image(path):
     img = cv2.imread(path)
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -199,10 +189,10 @@ def color_threshold(img, channel, thresh=(0, 255)):
     elif channel == 'H':
         hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
         color_mask = hls[:, :, 0]
-    elif channel == 'L':
+    elif channel == 'S':
         hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
         color_mask = hls[:, :, 1]
-    elif channel == 'S':
+    elif channel == 'V':
         hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
         color_mask = hls[:, :, 2]
     else:
