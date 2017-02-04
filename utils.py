@@ -55,7 +55,6 @@ def abs_sobel_threshold(img, orient='x', sobel_kernel=3, thresh=[0, 255]):
     return apply_threshold(sobel, thresh)
 
 
-
 def mag_thresh(img, sobel_kernel, thresh=[0, 255]):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, sobel_kernel)
@@ -79,58 +78,6 @@ def dir_thresh(img, sobel_kernel, thresh=[0, np.pi / 2]):
 def load_image(path):
     img = cv2.imread(path)
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-
-def gaussian_blur(img, kernel_size):
-    """Applies a Gaussian Noise kernel"""
-    return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
-
-
-def region_of_interest(img, vertices):
-    """
-    Applies an image mask.
-
-    Only keeps the region of the image defined by the polygon
-    formed from `vertices`. The rest of the image is set to black.
-    """
-    # defining a blank mask to start with
-    mask = np.zeros_like(img)
-
-    # defining a 3 channel or 1 channel color to fill the mask with depending on the input image
-    if len(img.shape) > 2:
-        channel_count = img.shape[2]  # i.e. 3 or 4 depending on your image
-        ignore_mask_color = (255,) * channel_count
-    else:
-        ignore_mask_color = 255
-
-    # filling pixels inside the polygon defined by "vertices" with the fill color
-    cv2.fillPoly(mask, vertices, ignore_mask_color)
-
-    # returning the image only where mask pixels are nonzero
-    masked_image = cv2.bitwise_and(img, mask)
-    return masked_image
-
-
-def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
-    """
-    NOTE: this is the function you might want to use as a starting point once you want to
-    average/extrapolate the line segments you detect to map out the full
-    extent of the lane (going from the result shown in raw-lines-example.mp4
-    to that shown in P1_example.mp4).
-
-    Think about things like separating line segments by their
-    slope ((y2-y1)/(x2-x1)) to decide which segments are part of the left
-    line vs. the right line.  Then, you can average the position of each of
-    the lines and extrapolate to the top and bottom of the lane.
-
-    This function draws `lines` with `color` and `thickness`.
-    Lines are drawn on the image inplace (mutates the image).
-    If you want to make the lines semi-transparent, think about combining
-    this function with the weighted_img() function below
-    """
-    for line in lines:
-        for x1, y1, x2, y2 in line:
-            cv2.line(img, (x1, y1), (x2, y2), color, thickness)
 
 
 def get_transformation_source(h, w, left=0.465, right=0.535, top=0.625, bottom=1):
@@ -179,23 +126,72 @@ def convert_to_birds_eye_view(img):
     return img, src, dest
 
 
-def color_threshold(img, channel, thresh=(0, 255)):
-    if channel == 'R':
-        color_mask = img[:, :, 0]
-    elif channel == 'G':
-        color_mask = img[:, :, 1]
-    elif channel == 'B':
-        color_mask = img[:, :, 2]
-    elif channel == 'H':
-        hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-        color_mask = hls[:, :, 0]
-    elif channel == 'S':
-        hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-        color_mask = hls[:, :, 1]
-    elif channel == 'V':
-        hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-        color_mask = hls[:, :, 2]
-    else:
-        color_mask = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+def get_line_centers(warped):
+    histogram = np.sum(warped[warped.shape[0] / 2:, :], axis=0)
 
-    return apply_threshold(color_mask, thresh)
+    # Find the peak of the left and right halves of the histogram
+    midpoint = np.int(histogram.shape[0] / 2)
+    left_center = np.argmax(histogram[:midpoint])
+    right_center = np.argmax(histogram[midpoint:]) + midpoint
+
+    return left_center, right_center
+
+
+def get_lane(image, center, num_windows=9, width=100, minpix=100):
+    h = image.shape[0]
+    nonzero = image.nonzero()
+    nonzeroy = np.array(nonzero[0])
+    nonzerox = np.array(nonzero[1])
+
+    lane = []
+    window_height = h // num_windows
+    current = center
+
+    for window in range(num_windows):
+        lo = h - (window + 1) * window_height
+        hi = h - window * window_height
+        left = current - width
+        right = current + width
+
+        good_idx = ((nonzeroy >= lo) & (nonzeroy < hi) &
+                    (nonzerox >= left) & (nonzerox < right)).nonzero()[0]
+        lane.append(good_idx)
+        if len(good_idx) > minpix:
+            current = np.int(np.mean(nonzerox[good_idx]))
+
+    lane = np.concatenate(lane)
+    return nonzeroy[lane], nonzerox[lane]
+
+
+def fit_line(fit, y):
+    return fit[0] * y ** 2 + fit[1] * y + fit[2]
+
+
+def get_line_coef(x, y):
+    return np.polyfit(y, x, 2)
+
+
+def find_lane(image, fit, width=100):
+    nonzero = image.nonzero()
+    nonzeroy = np.array(nonzero[0])
+    nonzerox = np.array(nonzero[1])
+
+    left_lane_inds = ((nonzerox > (fit[0] * (nonzeroy ** 2) + fit[1] * nonzeroy + fit[2] - width)) &
+                      (nonzerox < (fit[0] * (nonzeroy ** 2) + fit[1] * nonzeroy + fit[2] + width)))
+
+    x = nonzerox[left_lane_inds]
+    y = nonzeroy[left_lane_inds]
+    return x, y
+
+
+def get_curvature(x, y):
+    y_eval = np.max(y)
+    ym_per_pix = 30 / 720  # meters per pixel in y dimension
+    xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
+
+    # Fit new polynomials to x,y in world space
+    fit_cr = np.polyfit(y * ym_per_pix, x * xm_per_pix, 2)
+    # Calculate the new radii of curvature
+    left_curverad = ((1 + (2 * fit_cr[0] * y_eval * ym_per_pix + fit_cr[1]) ** 2) ** 1.5) / np.absolute(
+        2 * fit_cr[0])
+    return np.round(left_curverad, 2)

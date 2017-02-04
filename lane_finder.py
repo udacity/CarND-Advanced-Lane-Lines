@@ -1,19 +1,29 @@
 import cv2
 import numpy as np
 import utils
+from line import Line
 
 
 class LaneFinder:
     def __init__(self, mtx, dist):
         self.mtx = mtx
         self.dist = dist
-        self.left_fit = None
-        self.right_fit = None
+        self.left_line = Line()
+        self.right_line = Line()
 
     def undistort(self, img):
         return cv2.undistort(img, self.mtx, self.dist, None, self.mtx)
 
-    def get_transformation_source(self, img, left=0.47, right=0.53, top=0.62, bottom=1):
+    def get_line_centers(self, warped):
+        histogram = np.sum(warped[warped.shape[0] / 2:, :], axis=0)
+
+        # Find the peak of the left and right halves of the histogram
+        midpoint = np.int(histogram.shape[0] / 2)
+        left_center = np.argmax(histogram[:midpoint])
+        right_center = np.argmax(histogram[midpoint:]) + midpoint
+        return left_center, right_center
+
+    def get_transformation_source(self, img, left=0.44, right=0.56, top=0.655, bottom=1):
         h, w = img.shape[:2]
         top_left = [w * left, h * top, ]
         top_right = [w * right, h * top]
@@ -84,47 +94,6 @@ class LaneFinder:
 
         return self.convert_to_birds_eye_view(combined_binary)
 
-    def get_line_centers(self, warped):
-        histogram = np.sum(warped[warped.shape[0] / 2:, :], axis=0)
-
-        # Find the peak of the left and right halves of the histogram
-        midpoint = np.int(histogram.shape[0] / 2)
-        left_center = np.argmax(histogram[:midpoint])
-        right_center = np.argmax(histogram[midpoint:]) + midpoint
-
-        return left_center, right_center
-
-    def get_lane(self, image, center, num_windows=9, width=100, minpix=100):
-        h = image.shape[0]
-        nonzero = image.nonzero()
-        nonzeroy = np.array(nonzero[0])
-        nonzerox = np.array(nonzero[1])
-
-        lane = []
-        window_height = h // num_windows
-        current = center
-
-        for window in range(num_windows):
-            lo = h - (window + 1) * window_height
-            hi = h - window * window_height
-            left = current - width
-            right = current + width
-
-            good_idx = ((nonzeroy >= lo) & (nonzeroy < hi) &
-                        (nonzerox >= left) & (nonzerox < right)).nonzero()[0]
-            lane.append(good_idx)
-            if len(good_idx) > minpix:
-                current = np.int(np.mean(nonzerox[good_idx]))
-
-        lane = np.concatenate(lane)
-        return nonzeroy[lane], nonzerox[lane]
-
-    def fit_line(self, coef, y):
-        return coef[0] * y ** 2 + coef[1] * y + coef[2]
-
-    def get_line_coef(self, x, y):
-        return np.polyfit(y, x, 2)
-
     def project_on_image(self, img, left_x, right_x, y):
         color_warp = np.zeros_like(img).astype(np.uint8)
 
@@ -148,30 +117,6 @@ class LaneFinder:
         result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
         return result
 
-    def find_lane(self, image, fit, width=100):
-        nonzero = image.nonzero()
-        nonzeroy = np.array(nonzero[0])
-        nonzerox = np.array(nonzero[1])
-
-        left_lane_inds = ((nonzerox > (fit[0] * (nonzeroy ** 2) + fit[1] * nonzeroy + fit[2] - width)) &
-                          (nonzerox < (fit[0] * (nonzeroy ** 2) + fit[1] * nonzeroy + fit[2] + width)))
-
-        x = nonzerox[left_lane_inds]
-        y = nonzeroy[left_lane_inds]
-        return x, y
-
-    def get_curvature(self, fit, fity):
-        y_eval = np.max(fity)
-        ym_per_pix = 30 / 720  # meters per pixel in y dimension
-        xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
-
-        # Fit new polynomials to x,y in world space
-        left_fit_cr = np.polyfit(fity * ym_per_pix, fit * xm_per_pix, 2)
-        # Calculate the new radii of curvature
-        left_curverad = ((1 + (2 * left_fit_cr[0] * y_eval * ym_per_pix + left_fit_cr[1]) ** 2) ** 1.5) / np.absolute(
-            2 * left_fit_cr[0])
-        return np.round(left_curverad, 2)
-
     def get_deviation_from_center(self, img, left, right):
         xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
@@ -184,31 +129,20 @@ class LaneFinder:
 
         left_center, right_center = self.get_line_centers(warped)
 
-        if self.left_fit is None or self.right_fit is None:
-            left_y, left_x = self.get_lane(warped, left_center)
-            right_y, right_x = self.get_lane(warped, right_center)
-        else:
-            left_x, left_y = self.find_lane(warped, self.left_fit)
-            right_x, right_y = self.find_lane(warped, self.right_fit)
+        self.left_line.process_image(warped, left_center)
+        self.right_line.process_image(warped, right_center)
 
-        self.left_fit = self.get_line_coef(left_x, left_y)
-        self.right_fit = self.get_line_coef(right_x, right_y)
-
-        fit_y = np.linspace(0, img.shape[0] - 1, img.shape[0])
-        left_x = self.fit_line(self.left_fit, fit_y)
-        right_x = self.fit_line(self.right_fit, fit_y)
-
-        result = self.project_on_image(img, left_x, right_x, fit_y)
+        y = np.linspace(0, img.shape[0] - 1, img.shape[0])
+        result = self.project_on_image(img, utils.fit_line(self.left_line.current_fit, y),
+                                       utils.fit_line(self.right_line.current_fit, y), y)
 
         result = self.display_mask(result, warped)
         result = self.display_birds_eye(result)
 
-        left_curve = self.get_curvature(left_x, fit_y)
-        right_curve = self.get_curvature(right_x, fit_y)
         deviation = self.get_deviation_from_center(result, left_center, right_center)
 
-        l_text = "Left Curvature:  {} m".format(left_curve)
-        r_text = "Right Curvature:  {} m".format(right_curve)
+        l_text = "Left Curvature:  {} m".format(self.left_line.radius_of_curvature)
+        r_text = "Right Curvature:  {} m".format(self.right_line.radius_of_curvature)
         dev_text = "Deviation from center: {} m".format(deviation)
         cv2.putText(result, l_text, (50, 50), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
         cv2.putText(result, r_text, (50, 90), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
