@@ -32,6 +32,10 @@ def undistort(img, mtx, dist):
     return cv2.undistort(img, mtx, dist, None, mtx)
 
 
+def gaussian_blur(img, kernel_size):
+    """Applies a Gaussian Noise kernel"""
+    return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
+
 def apply_threshold(mask, thresh):
     binary = np.zeros_like(mask)
     binary[(mask >= thresh[0]) & (mask <= thresh[1])] = 1
@@ -80,22 +84,6 @@ def load_image(path):
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 
-def get_transformation_source(h, w, left=0.465, right=0.535, top=0.625, bottom=1):
-    top_left = [w * left, h * top, ]
-    top_right = [w * right, h * top]
-    bottom_left = [w * 0.16, h * bottom]
-    bottom_right = [w * 0.86, h * bottom]
-    return np.array([top_left, bottom_left, bottom_right, top_right], np.float32)
-
-
-def get_transformation_destination(h, w):
-    top_left = [w * 0.25, 0]
-    top_right = [w * 0.75, 0]
-    bottom_left = [w * 0.25, h]
-    bottom_right = [w * 0.75, h]
-    return np.array([top_left, bottom_left, bottom_right, top_right], np.float32)
-
-
 def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
     """
     `img` should be a blank image (all black).
@@ -113,17 +101,6 @@ def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
 def perspective_transform(img, src, dst):
     M = cv2.getPerspectiveTransform(src, dst)
     return cv2.warpPerspective(img, M, (img.shape[1],img.shape[0]), flags=cv2.INTER_LINEAR)
-
-
-def convert_to_birds_eye_view(img):
-    h, w = img.shape[:2]
-
-    src = get_transformation_source(h, w)
-    dest = get_transformation_destination(h, w)
-
-    img = perspective_transform(img, src, dest)
-
-    return img, src, dest
 
 
 def get_line_centers(warped):

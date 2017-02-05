@@ -84,13 +84,15 @@ class LaneFinder:
         warped = self.undistort(img)
 
         # Threshold x gradient
-        x_sobel = utils.abs_sobel_threshold(warped, 'x', 5, thresh=(20, 170))
+        x_sobel = utils.abs_sobel_threshold(warped, 'x', 17, thresh=(20, 170))
 
         yellow = self.detect_yellow_line(warped)
         white = self.detect_white_line(warped)
 
         combined_binary = np.zeros_like(x_sobel)
-        combined_binary[(white == 1) | (yellow == 1)] = 1
+        combined_binary[(white == 1) | (yellow == 1) | (x_sobel == 1)] = 1
+
+        combined_binary = utils.gaussian_blur(combined_binary, 5)
 
         return self.convert_to_birds_eye_view(combined_binary)
 
@@ -121,7 +123,7 @@ class LaneFinder:
         xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
         middle = img.shape[1] / 2
-        dev = (left + right >> 1) - middle
+        dev = (left + right) - 2*middle
         return np.round(dev * xm_per_pix, 2)
 
     def process_image(self, img):
