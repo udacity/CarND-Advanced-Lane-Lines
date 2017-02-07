@@ -1,7 +1,7 @@
 import numpy as np
 import utils
 
-N = 24 # number of measurement to average over
+N = 12 # number of measurement to average over
 
 class Line():
     def __init__(self):

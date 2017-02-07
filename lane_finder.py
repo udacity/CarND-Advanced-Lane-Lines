@@ -92,7 +92,7 @@ class LaneFinder:
         white = self.detect_white_line(warped)
 
         combined_binary = np.zeros_like(x_sobel)
-        combined_binary[(white == 1) | (yellow == 1) | (x_sobel == 1)] = 1
+        combined_binary[(white == 1) | (yellow == 1)] = 1
 
         combined_binary = utils.gaussian_blur(combined_binary, 5)
 
@@ -145,12 +145,11 @@ class LaneFinder:
 
         deviation = self.get_deviation_from_center(result, left_center, right_center)
 
-        l_text = "Left Curvature:  {} m".format(self.left_line.radius_of_curvature)
-        r_text = "Right Curvature:  {} m".format(self.right_line.radius_of_curvature)
+        curvature = np.round(self.left_line.radius_of_curvature + self.right_line.radius_of_curvature / 2, 2)
+        c_text = "Curvature:  {} m".format(curvature)
         dev_text = "Deviation from center: {} m".format(deviation)
-        cv2.putText(result, l_text, (50, 50), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
-        cv2.putText(result, r_text, (50, 90), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
-        cv2.putText(result, dev_text, (50, 130), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
+        cv2.putText(result, c_text, (50, 50), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
+        cv2.putText(result, dev_text, (50, 90), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
 
         return result
 
