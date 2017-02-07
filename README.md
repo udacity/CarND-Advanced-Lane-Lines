@@ -46,6 +46,7 @@ I applied this distortion correction to the test image using the cv2.undistort()
 ####1. Provide an example of a distortion-corrected image.
 To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
 ![alt text][image2]
+
 Provided the camera distortion coefficients from the previous step I used the `cv2.undistort()` method to correct the image distortion.
 
 ####2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
