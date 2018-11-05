@@ -13,23 +13,21 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[notebook]: ./Advanced_Lane_Lines.ipynb "Jupyter Notebook"
-[image1]: ./examples/undistort_output.png "Undistorted"
+[image1]: ./camera_cal/calibration1.jpg "Calibration Image"
+[image2]: ./output_images/undistorted_chessboard.jpg "Undistorted Chessboard Image"
 
 ## Setup
-- ![Jupyter notebook][notebook]
+- ![Jupyter notebook][./Advanced_Lane_Lines.ipynb]
 
 ### Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
+Code Section: 1.1  
 
-#### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
-
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
-
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
-
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+The code comprises of two methods:  
+- get_distortion_vars(): This function steps through the list of calibration images, and finds their object points and image points to perform camera calibration.
+- undistort(image): This function takes an image, and undistorts it using the calibration attributes returned by the above function.
 
 ![alt text][image1]
+![alt text][image2]
 
 ### Pipeline (single images)
 
