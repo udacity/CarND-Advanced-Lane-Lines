@@ -17,6 +17,9 @@ The goals / steps of this project are the following:
 [image3]: ./test_images/test2.jpg "Test Image"
 [image4]: ./output_images/undistorted_image.jpg "Undistorted Image"
 [image5]: ./output_images/distorted_undistorted_overlapped.jpg "Overlapped Image"
+[image6]: ./output_images/h-channel.jpg "H-Channel"
+[image7]: ./output_images/l-channel.jpg "L-Channel"
+[image8]: ./output_images/s-channel.jpg "S-Channel"
 
 ### Setup
 
@@ -51,3 +54,14 @@ I have used the image `/test_images/test2.jpg` for the purpose of testing the fu
 ##### Overlapped Image
 The difference between the original and undistorted images isn't quite evident when seen separately. So I have created an overlapped image.  
 ![alt text][image5]
+
+### 3. Use color transforms, gradients, etc., to create a thresholded binary image.
+#### 3.1 HLS and Color Thresholds
+I have splitted the image into H, L and S channels to check which one depicts the lane more prominently.  
+##### H-Channel
+![alt text][image6]
+##### L-Channel
+![alt text][image7]
+##### S-Channel
+![alt text][image8]
+
