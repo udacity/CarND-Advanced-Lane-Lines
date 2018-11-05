@@ -12,7 +12,6 @@ The goals / steps of this project are the following:
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
 [//]: # (Image References)
-
 [image1]: ./camera_cal/calibration1.jpg "Calibration Image"
 [image2]: ./output_images/undistorted_chessboard.jpg "Undistorted Chessboard Image"
 
@@ -20,13 +19,18 @@ The goals / steps of this project are the following:
 - ![Jupyter notebook][./Advanced_Lane_Lines.ipynb]
 
 ### Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
-Code Section: 1.1  
+#### Code Section 1.1:  
 
 The code comprises of two methods:  
 - get_distortion_vars(): This function steps through the list of calibration images, and finds their object points and image points to perform camera calibration.
 - undistort(image): This function takes an image, and undistorts it using the calibration attributes returned by the above function.
 
+#### Code Section 1.2:
+In this section, I have used the functions in code section 1.1 to calibrate and undistort one of the calibration image.  
+Calibration Image:  
 ![alt text][image1]
+
+Undistorted Chessboard Image:
 ![alt text][image2]
 
 ### Pipeline (single images)
