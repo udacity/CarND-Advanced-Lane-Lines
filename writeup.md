@@ -20,11 +20,18 @@ The goals / steps of this project are the following:
 [image6]: ./output_images/h-channel.jpg "H-Channel"
 [image7]: ./output_images/l-channel.jpg "L-Channel"
 [image8]: ./output_images/s-channel.jpg "S-Channel"
+[image9]: ./output_images/threshold-x.jpg "Sobel operation on image over x-axis"
+[image10]: ./output_images/threshold-y.png "Sobel operation on image over y-axis"
+[image11]: ./output_images/threshold-magnitude.png "Magnitude of the gradient"
+[image12]: ./output_images/threshold-direction.png "Direction of the gradient"
+[image13]: ./output_images/threshold-s-channel.png "Threshold of the s-channel image"
+[image14]: ./output_images/threshold-combined.png "Combined threshold"
 
 ### Setup
 
 ##### Link to Jupyter Notebook
-![Jupyter notebook][./Advanced_Lane_Lines.ipynb]
+- ![Jupyter notebook][./Advanced_Lane_Lines.ipynb]
+- I have reused much of the boilerplate code from quizzes where available, with some tweaks in places.
 
 ### 1. Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
 #### 1.1 Computation of camera calibration matrix and distortion coefficients.
@@ -65,3 +72,24 @@ I have splitted the image into H, L and S channels to check which one depicts th
 ##### S-Channel
 ![alt text][image8]
 
+We see that the lanes are more prominent on the S-channel. In the sections below, we will perform further operations on the S-channel image for lane detection.
+
+#### 3.2 Threshold codes taken from Course resources
+
+##### Sobel operator applied along the x-axis
+![alt text][image9]
+
+##### Sobel operator applied along the y-axis
+![alt text][image10]
+
+##### Magnitude of the gradient
+![alt text][image11]
+
+##### Direction of the gradient
+![alt text][image12]
+
+##### Threshold image of the S-channel
+![alt text][image13]
+
+##### Combined threshold
+![alt text][image14]
