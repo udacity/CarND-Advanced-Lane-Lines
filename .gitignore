@@ -1,0 +1,7 @@
+.vscode
+.cache
+__pycache__
+*.swp
+*.pyc
+*.log
+.gitconfig
