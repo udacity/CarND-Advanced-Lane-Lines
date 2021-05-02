@@ -5,6 +5,7 @@ import glob
 import cv2
 import binary
 import numpy as np
+import findingLines
 
 # find the corners in the calibration images and save the output into file
 # execution is once enough
@@ -56,9 +57,10 @@ for fname in images:
                     [img_size[1]*0.75, img_size[0]*1]])    #bottomRight
 
     # transform to birdsEye
-    transform.tranform_and_warp_and_save(fname, binary_img, src, dst)
+    warped = transform.tranform_and_warp_and_save(fname, binary_img, src, dst)
     transform.tranform_and_warp_and_save(fname, img, src, dst, '_img')
 
+    findingLines.sliding_window(fname, warped)
     #out_img = fit_polynomial(binary_warped)
 
 cv2.destroyAllWindows()
