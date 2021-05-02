@@ -40,3 +40,5 @@ def create_binary_and_save(fname, img):
     outputFilePath = os.path.normpath(outputFilePath)
     print("OPUTPUT: " + outputFilePath)
     cv2.imwrite(outputFilePath, color_binary)
+
+    return color_binary

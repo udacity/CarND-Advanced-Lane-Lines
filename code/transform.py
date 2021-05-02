@@ -16,6 +16,27 @@ def tranform_and_warp(undist,src, dst):
     sizes = (undist.shape[1], undist.shape[0])
     return cv2.warpPerspective(undist, M, sizes, flags=cv2.INTER_LINEAR)
 
+
+def tranform_and_warp_and_save(fname, undist,src, dst, name=None):
+    warped = tranform_and_warp(undist,src, dst)
+        
+    # Display
+    cv2.imshow('tranform',warped)
+    cv2.waitKey(500)
+
+    # save into file
+    fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
+    if name is not None:
+        fileName = os.path.splitext(os.path.basename(fname))[0] + name +'.png'
+    else:
+        fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
+    outputFilePath = os.path.join('./../output_images/transform' ,fileName)
+    outputFilePath = os.path.normpath(outputFilePath)
+    print("OPUTPUT: " + outputFilePath)
+    cv2.imwrite(outputFilePath, warped)
+
+    return warped
+
 def corners_unwarp():
     # Make a list of images
     images = glob.glob('./../output_images/distortion/calibration*.png')
@@ -49,18 +70,8 @@ def corners_unwarp():
                             [img_size[1]*0.1, img_size[0]*0.9],
                             [img_size[1]*0.9, img_size[0]*0.9]])
 
-            warped = tranform_and_warp(undist,src, dst)
-                
-            # Display
-            cv2.imshow('undistorted',warped)
-            cv2.waitKey(500)
-
-            # save into file
-            fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-            outputFilePath = os.path.join('./../output_images/transform' ,fileName)
-            outputFilePath = os.path.normpath(outputFilePath)
-            print("OPUTPUT: " + outputFilePath)
-            cv2.imwrite(outputFilePath, warped)
+            tranform_and_warp_and_save(fname, undist,src, dst)
+            
         else:
             # If not all checkboard corners are seen in the image this step failes
             print ('finding corners failed for:' + fname)
