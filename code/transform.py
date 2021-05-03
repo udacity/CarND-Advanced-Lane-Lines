@@ -21,7 +21,10 @@ def tranform_and_warp_and_save(fname, undist,src, dst, name=None):
     warped = tranform_and_warp(undist,src, dst)
         
     # Display
-    cv2.imshow('tranform',warped)
+    if name is not None:
+        cv2.imshow('tranform',warped)
+    else:
+        cv2.imshow(name,warped)
     cv2.waitKey(500)
 
     # save into file

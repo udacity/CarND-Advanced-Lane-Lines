@@ -116,15 +116,18 @@ def sliding_window(fname, binary_warped):
        left_fitx = 1*ploty**2 + 1*ploty
        right_fitx = 1*ploty**2 + 1*ploty   
 
-    #pts = np.array(left_fitx, ploty, np.int32)
-    #pts = np.array([[left_fitx[0], ploty[0]], [left_fitx[-1], ploty[-1]]], np.int32)
-    pts = np.stack((left_fitx, ploty), axis=1)
-    pts = pts.reshape((-1,1,2))
-    cv2.polylines(out_img,np.int32([pts]),False,(0,255,255))
+    pts_left = np.stack((left_fitx, ploty), axis=1)
+    pts_left = pts_left.reshape((-1,1,2))
+    cv2.polylines(out_img,np.int32([pts_left]),False,(0,255,255))
 
-    pts = np.stack((right_fitx, ploty), axis=1)
-    pts = pts.reshape((-1,1,2))
-    cv2.polylines(out_img,np.int32([pts]),False,(0,255,255))
+    pts_right = np.stack((right_fitx, ploty), axis=1)
+    pts_right = pts_right.reshape((-1,1,2))
+    cv2.polylines(out_img,np.int32([pts_right]),False,(0,255,255))
+
+    # create mask
+    mask = np.full((out_img.shape[0], out_img.shape[1],3), 0, dtype=np.uint8)
+    mask[lefty, leftx] = [255, 0, 0]
+    mask[righty, rightx] = [0, 0, 255]
 
     # Display
     cv2.imshow('sliding_window',out_img)
@@ -141,7 +144,7 @@ def sliding_window(fname, binary_warped):
     #plt.plot(left_fitx, ploty, color='yellow')
     #plt.plot(right_fitx, ploty, color='yellow')
 
-    return out_img
+    return [ploty, left_fit, right_fit, mask]
 
 
 def fit_poly(img_shape, leftx, lefty, rightx, righty):

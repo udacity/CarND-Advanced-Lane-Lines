@@ -6,6 +6,7 @@ import cv2
 import binary
 import numpy as np
 import findingLines
+import curvature
 
 # find the corners in the calibration images and save the output into file
 # execution is once enough
@@ -58,9 +59,27 @@ for fname in images:
 
     # transform to birdsEye
     warped = transform.tranform_and_warp_and_save(fname, binary_img, src, dst)
-    transform.tranform_and_warp_and_save(fname, img, src, dst, '_img')
+    #transform.tranform_and_warp_and_save(fname, img, src, dst, '_img')
 
-    findingLines.sliding_window(fname, warped)
+    [ploty, left_fit, right_fit, mask] = findingLines.sliding_window(fname, warped)
     #out_img = fit_polynomial(binary_warped)
+
+    left_curverad, right_curverad = curvature.measure_curvature_real(ploty, left_fit, right_fit)
+    curvature_mean = np.mean([left_curverad, right_curverad])
+    print(left_curverad, right_curverad)
+
+
+    warped_back = transform.tranform_and_warp_and_save(fname, mask, dst, src,'mask')
+
+    # TODO - merge so that the color is ramaining
+    merged = cv2.addWeighted(img,1.0,warped_back,0.5,0)
+    radiusText = 'Radius of Curvature = ' + str(int(curvature_mean)) + '(m)'
+    cv2.putText(merged,radiusText,(10,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+    cv2.imshow('merged',merged)
+    cv2.waitKey(500)
+
+
+    # add curvature and lane position
 
 cv2.destroyAllWindows()
