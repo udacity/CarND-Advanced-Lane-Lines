@@ -1,5 +1,10 @@
 import numpy as np
 
+# Define conversions in x and y from pixels space to meters
+ym_per_pix = 3/80 # meters per pixel in y dimension
+xm_per_pix = 3.7/680 # meters per pixel in x dimension
+    
+
 def generate_data():
     '''
     Generates fake data to use for calculating lane curvature.
@@ -30,55 +35,40 @@ def generate_data():
     
     return ploty, left_fit, right_fit
 
-    
-def measure_curvature_pixels(ploty, left_fit, right_fit):
-    '''
-    Calculates the curvature of polynomial functions in pixels.
-    '''
-    # Start by generating our fake example data
-    # Make sure to feed in your real data instead in your project!
-    #ploty, left_fit, right_fit = generate_data()
-    
-    # Define y-value where we want radius of curvature
-    # We'll choose the maximum y-value, corresponding to the bottom of the image
-    y_eval = np.max(ploty)
-    
-    ##### TO-DO: Implement the calculation of R_curve (radius of curvature) #####
-    delitmeter = (2*left_fit[0])
-    intern = 2*left_fit[0]*y_eval+left_fit[1]
-    zaeler = (1+intern**2)**(3/2)
-    left_curverad = zaeler/delitmeter  ## Implement the calculation of the left line here
-    delitmeter = (2*right_fit[0])
-    intern = 2*right_fit[0]*y_eval+right_fit[1]
-    zaeler = (1+intern**2)**(3/2)
-    right_curverad = zaeler/delitmeter  ## Implement the calculation of the right line here
-    
-    return left_curverad, right_curverad
-
 def measure_curvature_real(ploty, left_fit, right_fit):
     '''
     Calculates the curvature of polynomial functions in meters.
     '''
-    # Define conversions in x and y from pixels space to meters
-    ym_per_pix = 30/720 # meters per pixel in y dimension
-    xm_per_pix = 3.7/700 # meters per pixel in x dimension
-    
+
     # Start by generating our fake example data
     # Make sure to feed in your real data instead in your project!
     #ploty, left_fit, right_fit = generate_data(ym_per_pix, xm_per_pix)
     
     # Define y-value where we want radius of curvature
     # We'll choose the maximum y-value, corresponding to the bottom of the image
-    y_eval = np.max(ploty)
+    y_eval = np.max(ploty)*ym_per_pix
     
     ##### TO-DO: Implement the calculation of R_curve (radius of curvature) #####
-    delitmeter = (2*left_fit[0])
+    delitmeter = np.absolute(2*left_fit[0])
     intern = 2*left_fit[0]*y_eval+left_fit[1]
     zaeler = (1+intern**2)**(3/2)
     left_curverad = zaeler/delitmeter  ## Implement the calculation of the left line here
-    delitmeter = (2*right_fit[0])
+    
+    delitmeter = np.absolute(2*right_fit[0])
     intern = 2*right_fit[0]*y_eval+right_fit[1]
     zaeler = (1+intern**2)**(3/2)
     right_curverad = zaeler/delitmeter  ## Implement the calculation of the right line here
     
     return left_curverad, right_curverad
+
+def measure_position_real(left_fit, right_fit, width):
+    '''
+    Calculates the position of the ego vehicle
+    '''
+    width_pixel = right_fit[2] - left_fit[2]
+    center_pixel = width /2
+    lane_center_pixel = left_fit[2] + 0.5 * width_pixel
+    offset_pixel = lane_center_pixel - left_fit[2]
+    offset_real = offset_pixel * xm_per_pix
+
+    return offset_real
