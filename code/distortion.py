@@ -23,7 +23,7 @@ def undistort_and_save(fname, img):
 
     # save into file
     fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-    outputFilePath = os.path.join('./../output_images/distortion' ,fileName)
+    outputFilePath = os.path.join('./../output_images/02_distortion' ,fileName)
     outputFilePath = os.path.normpath(outputFilePath)
     print("OPUTPUT: " + outputFilePath)
     cv2.imwrite(outputFilePath, undistorted)

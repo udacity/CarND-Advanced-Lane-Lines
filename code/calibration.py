@@ -47,7 +47,7 @@ def calc_calibration_parameter():
 
             # save into file
             fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-            outputFilePath = os.path.join('./../output_images/calibration' ,fileName)
+            outputFilePath = os.path.join('./../output_images/01_calibration' ,fileName)
             outputFilePath = os.path.normpath(outputFilePath)
             print("OPUTPUT: " + outputFilePath)
             cv2.imwrite(outputFilePath, img)

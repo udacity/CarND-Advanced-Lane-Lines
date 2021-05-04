@@ -118,11 +118,11 @@ def sliding_window(fname, binary_warped):
 
     pts_left = np.stack((left_fitx, ploty), axis=1)
     pts_left = pts_left.reshape((-1,1,2))
-    cv2.polylines(out_img,np.int32([pts_left]),False,(0,255,255))
+    cv2.polylines(out_img,np.int32([pts_left]),False,(0,255,255),5)
 
     pts_right = np.stack((right_fitx, ploty), axis=1)
     pts_right = pts_right.reshape((-1,1,2))
-    cv2.polylines(out_img,np.int32([pts_right]),False,(0,255,255))
+    cv2.polylines(out_img,np.int32([pts_right]),False,(0,255,255),5)
 
     # create mask
     mask = np.full((out_img.shape[0], out_img.shape[1],3), 0, dtype=np.uint8)
@@ -135,7 +135,7 @@ def sliding_window(fname, binary_warped):
 
     # save into file
     fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-    outputFilePath = os.path.join('./../output_images/sliding_window' ,fileName)
+    outputFilePath = os.path.join('./../output_images/05_sliding_window' ,fileName)
     outputFilePath = os.path.normpath(outputFilePath)
     print("OPUTPUT: " + outputFilePath)
     cv2.imwrite(outputFilePath, out_img)
@@ -144,7 +144,7 @@ def sliding_window(fname, binary_warped):
     #plt.plot(left_fitx, ploty, color='yellow')
     #plt.plot(right_fitx, ploty, color='yellow')
 
-    return [ploty, left_fit, right_fit, mask]
+    return [ploty, left_fit, right_fit, mask, left_fitx, right_fitx]
 
 
 def fit_poly(img_shape, leftx, lefty, rightx, righty):

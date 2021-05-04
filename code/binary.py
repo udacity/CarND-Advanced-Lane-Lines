@@ -36,7 +36,7 @@ def create_binary_and_save(fname, img):
 
     # save into file
     fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-    outputFilePath = os.path.join('./../output_images/color_binary' ,fileName)
+    outputFilePath = os.path.join('./../output_images/03_color_binary' ,fileName)
     outputFilePath = os.path.normpath(outputFilePath)
     print("OPUTPUT: " + outputFilePath)
     cv2.imwrite(outputFilePath, color_binary)

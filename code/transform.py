@@ -14,11 +14,12 @@ def tranform_and_warp(undist,src, dst):
     M = cv2.getPerspectiveTransform(src, dst)
     # e) use cv2.warpPerspective() to warp your image to a top-down view
     sizes = (undist.shape[1], undist.shape[0])
-    return cv2.warpPerspective(undist, M, sizes, flags=cv2.INTER_LINEAR)
+    output = cv2.warpPerspective(undist, M, sizes, flags=cv2.INTER_LINEAR)
+    return [output, M]
 
 
 def tranform_and_warp_and_save(fname, undist,src, dst, name=None):
-    warped = tranform_and_warp(undist,src, dst)
+    [warped, M] = tranform_and_warp(undist,src, dst)
         
     # Display
     if name is not None:
@@ -33,16 +34,16 @@ def tranform_and_warp_and_save(fname, undist,src, dst, name=None):
         fileName = os.path.splitext(os.path.basename(fname))[0] + name +'.png'
     else:
         fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-    outputFilePath = os.path.join('./../output_images/transform' ,fileName)
+    outputFilePath = os.path.join('./../output_images/04_transform' ,fileName)
     outputFilePath = os.path.normpath(outputFilePath)
     print("OPUTPUT: " + outputFilePath)
     cv2.imwrite(outputFilePath, warped)
 
-    return warped
+    return [warped, M]
 
 def corners_unwarp():
     # Make a list of images
-    images = glob.glob('./../output_images/distortion/calibration*.png')
+    images = glob.glob('./../output_images/03_distortion/calibration*.png')
 
     print('Starting to tranform the calibration*.jpg')
     for fname in images:
