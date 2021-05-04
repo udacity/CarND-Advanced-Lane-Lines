@@ -5,12 +5,11 @@ import glob
 import pickle
 import os
 
-def calc_calibration_parameter():
+# prepare object points
+nx = 9# number of inside corners in x
+ny = 6# number of inside corners in y
 
-    # prepare object points
-    nx = 9#TODO: enter the number of inside corners in x
-    ny = 6#TODO: enter the number of inside corners in y
-
+def calc_calibration_parameter(visuOn = True, writeOn = True):
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp = np.zeros((ny*nx,3), np.float32)
     objp[:,:2] = np.mgrid[0:nx,0:ny].T.reshape(-1,2)
@@ -33,24 +32,27 @@ def calc_calibration_parameter():
         # Find the chessboard corners
         ret, corners = cv2.findChessboardCorners(gray, (nx, ny), None)
 
-        # If found,, add object points, image points and draw corners
+        # If found, add object points, image points and draw corners
         if ret == True:
             objpoints.append(objp)
             imgpoints.append(corners)
 
             # Draw corners
-            img = cv2.drawChessboardCorners(img, (9,6), corners, ret)
+            if visuOn or writeOn:
+                img = cv2.drawChessboardCorners(img, (9,6), corners, ret)
 
             # Display
-            cv2.imshow('img',img)
-            cv2.waitKey(500)
+            if visuOn:
+                cv2.imshow('chessboard corner',img)
+                cv2.waitKey(500)
 
             # save into file
-            fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-            outputFilePath = os.path.join('./../output_images/01_calibration' ,fileName)
-            outputFilePath = os.path.normpath(outputFilePath)
-            print("OPUTPUT: " + outputFilePath)
-            cv2.imwrite(outputFilePath, img)
+            if writeOn:
+                fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
+                outputFilePath = os.path.join('./../output_images/01_calibration' ,fileName)
+                outputFilePath = os.path.normpath(outputFilePath)
+                print("OPUTPUT: " + outputFilePath)
+                cv2.imwrite(outputFilePath, img)
         else:
             # If not all checkboard corners are seen in the image this step failes
             print ('finding corners failed for:' + fname)
@@ -61,6 +63,7 @@ def calc_calibration_parameter():
     # save the points into a file
     data = { "objpoints" : objpoints, "imgpoints" : imgpoints}
     pickle.dump( data, open( "wide_points_pickle.p", "wb" ) )
+    print ('Points saved into wide_points_pickle.p')
 
     # save the camera matrix and distortion coefficients
     img = cv2.imread(images[0])
@@ -68,4 +71,5 @@ def calc_calibration_parameter():
         cv2.calibrateCamera(objpoints, imgpoints, img.shape[1::-1], None, None)
     data = { "mtx" : mtx, "dist" : dist}
     pickle.dump( data, open( "wide_dist_pickle.p", "wb" ) )
+    print ('coefficients saved into wide_dist_pickle.p')
 

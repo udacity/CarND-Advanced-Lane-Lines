@@ -38,6 +38,6 @@ def run_test_images():
 if __name__ == "__main__":
     # calibrate once
     # find the corners in the calibration images and save the output into file
-    calibration.calc_calibration_parameter()
+    calibration.calc_calibration_parameter(False, False)
     
     run_test_images()
