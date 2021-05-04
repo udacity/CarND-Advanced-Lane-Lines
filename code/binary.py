@@ -1,10 +1,8 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import os
 
-
+# TODO: play with thresholds
 def create_binary(img, s_thresh=(170, 255), sx_thresh=(20, 100)):
     img = np.copy(img)
     # Convert to HLS color space and separate the V channel
@@ -27,18 +25,20 @@ def create_binary(img, s_thresh=(170, 255), sx_thresh=(20, 100)):
     color_binary = np.dstack(( np.zeros_like(sxbinary), sxbinary, s_binary)) * 255
     return color_binary
 
-def create_binary_and_save(fname, img):
+def create_binary_and_save(fname, img, visuOn = True, writeOn = True):
     color_binary = create_binary(img)
 
     # Display
-    cv2.imshow('color_binary',color_binary)
-    cv2.waitKey(500)
+    if visuOn:
+        cv2.imshow('color_binary',color_binary)
+        cv2.waitKey(500)
 
     # save into file
-    fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-    outputFilePath = os.path.join('./../output_images/03_color_binary' ,fileName)
-    outputFilePath = os.path.normpath(outputFilePath)
-    print("OPUTPUT: " + outputFilePath)
-    cv2.imwrite(outputFilePath, color_binary)
+    if writeOn:
+        fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
+        outputFilePath = os.path.join('./../output_images/03_color_binary' ,fileName)
+        outputFilePath = os.path.normpath(outputFilePath)
+        print("OPUTPUT: " + outputFilePath)
+        cv2.imwrite(outputFilePath, color_binary)
 
     return color_binary

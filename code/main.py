@@ -7,7 +7,7 @@ import os
 #################################################################
 # Calculation on test images                                    #
 #################################################################
-def run_test_images():
+def run_test_images(visuOn = True, writeOn = True):
     # Make a list of images
     img_path = './../test_images/*.jpg'
     images = glob.glob(img_path)
@@ -18,14 +18,14 @@ def run_test_images():
         img = cv2.imread(fname)
         print("INPUT: " + fname)
 
-        merged = pipeline.run(img,fname)
+        merged = pipeline.run(img,fname, visuOn, writeOn)
 
         cv2.imshow('merged',merged)
         cv2.waitKey(500)
 
         # save into file
         fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-        outputFilePath = os.path.join('./../output_images/06_merged' ,fileName)
+        outputFilePath = os.path.join('./../output_images/06_result' ,fileName)
         outputFilePath = os.path.normpath(outputFilePath)
         print("OPUTPUT: " + outputFilePath)
         cv2.imwrite(outputFilePath, merged)
@@ -38,6 +38,8 @@ def run_test_images():
 if __name__ == "__main__":
     # calibrate once
     # find the corners in the calibration images and save the output into file
-    calibration.calc_calibration_parameter(False, False)
+    #calibration.calc_calibration_parameter(False, False)
     
-    run_test_images()
+    #pipeline.test_undist_and_transform()
+    
+    run_test_images(False, False)

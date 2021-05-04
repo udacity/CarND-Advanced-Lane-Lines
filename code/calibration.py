@@ -1,13 +1,11 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
 import glob
 import pickle
 import os
 
-# prepare object points
-nx = 9# number of inside corners in x
-ny = 6# number of inside corners in y
+nx = 9 # the number of inside corners in x
+ny = 6 # the number of inside corners in y
 
 def calc_calibration_parameter(visuOn = True, writeOn = True):
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)

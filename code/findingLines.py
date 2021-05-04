@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 import cv2
 import os
 
@@ -59,11 +57,8 @@ def find_lane_pixels(binary_warped_color):
         inHeight = np.where(np.logical_and(nonzeroy>=win_y_low, nonzeroy<win_y_high))
         inWidthLeft = np.where(np.logical_and(nonzerox>=win_xleft_low, nonzerox<win_xleft_high))
         inWidthRight = np.where(np.logical_and(nonzerox>=win_xright_low, nonzerox<win_xright_high))
-        commonLeft = np.intersect1d(inHeight, inWidthLeft)
-        commonRight = np.intersect1d(inHeight, inWidthRight)
-        transNonZero = np.transpose(nonzero)
-        good_left_inds = commonLeft
-        good_right_inds = commonRight
+        good_left_inds = np.intersect1d(inHeight, inWidthLeft)
+        good_right_inds = np.intersect1d(inHeight, inWidthRight)
         
         # Append these indices to the lists
         left_lane_inds.append(good_left_inds)
@@ -92,59 +87,66 @@ def find_lane_pixels(binary_warped_color):
     return leftx, lefty, rightx, righty, out_img
 
 
-def sliding_window(fname, binary_warped):
+def sliding_window(fname, warped, visuOn = True, writeOn = True):
     # Find our lane pixels first
-    leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
+    leftx, lefty, rightx, righty, out_img = find_lane_pixels(warped)
 
     ### TO-DO: Fit a second order polynomial to each using `np.polyfit` ###
     ## Visualization ##
     # Colors in the left and right lane regions
     left_fit = np.polyfit(lefty, leftx, 2)
-    out_img[lefty, leftx] = [255, 0, 0]
-
     right_fit = np.polyfit(righty, rightx, 2)
-    out_img[righty, rightx] = [0, 0, 255]
 
     # Generate x and y values for plotting
-    ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
+    ploty = np.linspace(0, warped.shape[0]-1, warped.shape[0] )
     try:
-       left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-       right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+        left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+        right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
     except TypeError:
-       # Avoids an error if `left` and `right_fit` are still none or incorrect
-       print('The function failed to fit a line!')
-       left_fitx = 1*ploty**2 + 1*ploty
-       right_fitx = 1*ploty**2 + 1*ploty   
+        # Avoids an error if `left` and `right_fit` are still none or incorrect
+        print('The function failed to fit a line!')
+        left_fitx = 1*ploty**2 + 1*ploty
+        right_fitx = 1*ploty**2 + 1*ploty
 
-    pts_left = np.stack((left_fitx, ploty), axis=1)
-    pts_left = pts_left.reshape((-1,1,2))
-    cv2.polylines(out_img,np.int32([pts_left]),False,(0,255,255),5)
+    # Create an image to draw the lines on
+    warp_zero = np.zeros_like(warped).astype(np.uint8)
 
-    pts_right = np.stack((right_fitx, ploty), axis=1)
-    pts_right = pts_right.reshape((-1,1,2))
-    cv2.polylines(out_img,np.int32([pts_right]),False,(0,255,255),5)
+    # Recast the x and y points into usable format for cv2.fillPoly()
+    pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
+    pts = np.hstack((pts_left, pts_right))
 
-    # create mask
-    mask = np.full((out_img.shape[0], out_img.shape[1],3), 0, dtype=np.uint8)
-    mask[lefty, leftx] = [255, 0, 0]
-    mask[righty, rightx] = [0, 0, 255]
+    # Draw the lane onto the warped blank image
+    cv2.fillPoly(warp_zero, np.int_([pts]), (0,255, 0))
+    cv2.polylines(warp_zero, np.int_([pts_left]), False, (255, 0, 0),15)
+    cv2.polylines(warp_zero, np.int_([pts_right]), False, (0, 0, 255),15)
+
+    if visuOn or writeOn:
+        out_img[lefty, leftx] = [255, 0, 0]
+        out_img[righty, rightx] = [0, 0, 255]
+
+        pts_left = np.stack((left_fitx, ploty), axis=1)
+        pts_left = pts_left.reshape((-1,1,2))
+        cv2.polylines(out_img,np.int32([pts_left]),False,(0,255,255),5)
+
+        pts_right = np.stack((right_fitx, ploty), axis=1)
+        pts_right = pts_right.reshape((-1,1,2))
+        cv2.polylines(out_img,np.int32([pts_right]),False,(0,255,255),5)
 
     # Display
-    cv2.imshow('sliding_window',out_img)
-    cv2.waitKey(500)
+    if visuOn:
+        cv2.imshow('sliding_window',out_img)
+        cv2.waitKey(500)
 
     # save into file
-    fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
-    outputFilePath = os.path.join('./../output_images/05_sliding_window' ,fileName)
-    outputFilePath = os.path.normpath(outputFilePath)
-    print("OPUTPUT: " + outputFilePath)
-    cv2.imwrite(outputFilePath, out_img)
+    if writeOn:
+        fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
+        outputFilePath = os.path.join('./../output_images/05_sliding_window' ,fileName)
+        outputFilePath = os.path.normpath(outputFilePath)
+        print("OPUTPUT: " + outputFilePath)
+        cv2.imwrite(outputFilePath, out_img)
 
-    # Plots the left and right polynomials on the lane lines
-    #plt.plot(left_fitx, ploty, color='yellow')
-    #plt.plot(right_fitx, ploty, color='yellow')
-
-    return [ploty, left_fit, right_fit, mask, left_fitx, right_fitx]
+    return [left_fit, right_fit, warp_zero]
 
 
 def fit_poly(img_shape, leftx, lefty, rightx, righty):
@@ -226,8 +228,8 @@ def search_around_poly(binary_warped):
     result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
     
     # Plot the polynomial lines onto the image
-    plt.plot(left_fitx, ploty, color='yellow')
-    plt.plot(right_fitx, ploty, color='yellow')
+    #plt.plot(left_fitx, ploty, color='yellow')
+    #plt.plot(right_fitx, ploty, color='yellow')
     ## End visualization steps ##
     
     return result
