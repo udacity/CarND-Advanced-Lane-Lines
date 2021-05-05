@@ -7,6 +7,11 @@ import numpy as np
 import findingLines
 import curvature
 import os
+import line
+
+# store line parameters to track over time
+left_line = line.Line()
+right_line = line.Line()
 
 #################################################################
 # TEST CALIB IMG: undistortion and transformation on calibration images    #
@@ -32,7 +37,7 @@ def test_undist_and_transform():
 #################################################################
 # TEST ROAD IMG: full pipeline on single images                 #
 #################################################################
-def run(img, fname, visuOn = True, writeOn = True):
+def run(img, fname = None, visuOn = False, writeOn = False):
     img_size = img.shape
 
     # 1) undistort the image
@@ -59,12 +64,15 @@ def run(img, fname, visuOn = True, writeOn = True):
     #transform.transform_and_warp_and_save(fname, img, src, dst, visuOn, writeOn, '_img')
 
     # 4) find lines
-    # sliding window shall be used if no lines are detected previously
-    [left_fit, right_fit, lane_mask_top_view] = findingLines.sliding_window(fname, warped, visuOn, writeOn)
-
+    if left_line.detected or right_line.detected:
+        lane_mask_top_view = findingLines.search_around_poly(fname, warped, left_line, right_line, visuOn, writeOn)
+    else:
+        # sliding window shall be used if no lines are detected previously
+        lane_mask_top_view = findingLines.sliding_window(fname, warped, left_line, right_line, visuOn, writeOn)
+    
     # 5) calc curvature and position
-    curvature_lane = curvature.measure_curvature_real(img_size[0], left_fit, right_fit)
-    position = curvature.measure_position_real(left_fit, right_fit, img_size)
+    curvature_lane = curvature.measure_curvature_real(img_size[0], left_line, right_line)
+    position = curvature.measure_position_real(left_line, right_line, img_size)
 
     # 6) draw lane and data to the image
     # Warp the blank back to original image space using inverse perspective matrix (Minv)
@@ -80,5 +88,20 @@ def run(img, fname, visuOn = True, writeOn = True):
     else:
         positionText = 'Vehicle is ' + str(abs(round(position,2))) + '(m) left of center'
     cv2.putText(result,positionText,(10,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+    # Display
+    if visuOn:
+        cv2.imshow('merged',result)
+        cv2.waitKey(500)
+
+    # save into file
+    if writeOn:
+        # save into file
+        fileName = os.path.splitext(os.path.basename(fname))[0] + '.png'
+        outputFilePath = os.path.join('./../output_images/06_result' ,fileName)
+        outputFilePath = os.path.normpath(outputFilePath)
+        print("OPUTPUT: " + outputFilePath)
+        cv2.imwrite(outputFilePath, result)
+
 
     return result
