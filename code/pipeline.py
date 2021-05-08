@@ -46,25 +46,12 @@ def run(img, fname = None, visuOn = False, writeOn = False):
     # 2) calculate the binary image
     binary_img = binary.create_binary_and_save(fname, undistorted, visuOn, writeOn)
 
-    # create symmetric trapezoid as source
-    topLeft = [590,450]
-    bottemLeft = [180,720]
-    topRight = [690,450]
-    bottomRight = [1100,720]
-    src = np.float32([topLeft,topRight,bottemLeft,bottomRight])
-
-    # create vertical lines in image (birdsEye)
-    dst = np.float32([[250, 100],   #topLeft
-                    [1030, 100],     #topRight
-                    [250, 720],     #bottomLeft
-                    [1030, 720]])    #bottomRight
-
     # 3) transform to birdsEye
-    [warped, M] = transform.transform_and_warp_and_save(fname, binary_img, src, dst, visuOn, writeOn)
+    [warped, M] = transform.transform_and_warp_and_save(fname, binary_img, visuOn, writeOn)
     #transform.transform_and_warp_and_save(fname, img, src, dst, visuOn, writeOn, '_img')
 
     # 4) find lines
-    if left_line.detected or right_line.detected:
+    if (left_line.detected or right_line.detected )and (fname is None):
         lane_mask_top_view = findingLines.search_around_poly(fname, warped, left_line, right_line, visuOn, writeOn)
     else:
         # sliding window shall be used if no lines are detected previously

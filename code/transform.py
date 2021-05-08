@@ -5,6 +5,18 @@ import os
 nx = 9 # the number of inside corners in x
 ny = 6 # the number of inside corners in y
 
+# create symmetric trapezoid as source
+src = np.float32([[590,450],         #topLeft
+                [690,450],          #topRight
+                [180,720],          #bottomLeft
+                [1100,720]])        #bottomRight
+
+# create vertical lines in image (birdsEye)
+dst = np.float32([[250, 100],       #topLeft
+                [1030, 100],        #topRight
+                [250, 720],         #bottomLeft
+                [1030, 720]])       #bottomRight
+
 def transform_and_warp(undist, src, dst):
     # a) use cv2.getPerspectiveTransform() to get M, the transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
@@ -15,7 +27,7 @@ def transform_and_warp(undist, src, dst):
     return [warped, M]
 
 
-def transform_and_warp_and_save(fname, undist, src, dst, visuOn = True, writeOn = True, name=None):
+def transform_and_warp_and_save(fname, undist, visuOn = True, writeOn = True, name=None):
     [warped, M] = transform_and_warp(undist,src, dst)
         
     # Display

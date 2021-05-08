@@ -11,8 +11,8 @@ import numpy as np
 #################################################################
 def run_test_images(visuOn = True, writeOn = True):
     # Make a list of images
-    #img_path = './../test_images/*.jpg'
-    img_path = './../project_video_images/*.png'
+    img_path = './../test_images/*.jpg'
+    #img_path = './../project_video_images/*.png'
     images = glob.glob(img_path)
 
     print('Starting to process: ' + img_path)

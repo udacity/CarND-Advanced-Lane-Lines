@@ -58,11 +58,6 @@ def calc_calibration_parameter(visuOn = True, writeOn = True):
 
     cv2.destroyAllWindows()
 
-    # save the points into a file
-    data = { "objpoints" : objpoints, "imgpoints" : imgpoints}
-    pickle.dump( data, open( "wide_points_pickle.p", "wb" ) )
-    print ('Points saved into wide_points_pickle.p')
-
     # save the camera matrix and distortion coefficients
     img = cv2.imread(images[0])
     ret, mtx, dist, rvecs, tvecs = \
