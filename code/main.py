@@ -48,8 +48,8 @@ def run_video(visuOn = False, writeOn = False):
     ## To do so add .subclip(start_second,end_second) to the end of the line below
     ## Where start_second and end_second are integer values representing the start and end of the subclip
     ## You may also uncomment the following line for a subclip of the first 5 seconds
-    clip1 = VideoFileClip(video_path).subclip(19,25)
-    #clip1 = VideoFileClip(video_path)
+    #clip1 = VideoFileClip(video_path).subclip(19,25)
+    clip1 = VideoFileClip(video_path)
 
     # dump out few images of the video files for analysis purpose
     # timeline = np.linspace(0,int(clip1.duration),int(clip1.duration)+1)

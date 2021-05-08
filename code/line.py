@@ -7,6 +7,8 @@ class Line():
         self.detected = False  
         # x values of the last n fits of the line
         self.recent_xfitted = [] 
+        # y values of the last n fits of the line
+        self.recent_yfitted = [] 
         #average x values of the fitted line over the last n iterations
         self.bestx = None     
         #polynomial coefficients averaged over the last n iterations

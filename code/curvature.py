@@ -10,8 +10,8 @@ def measure_curvature_real(y_eval,left_line, right_line):
     '''
     Calculates the curvature of polynomial functions in meters.
     '''    
-    left_fit = left_line.current_fit
-    right_fit = right_line.current_fit
+    left_fit = left_line.best_fit
+    right_fit = right_line.best_fit
 
     # left line
     delitmeter = np.absolute(2*left_fit[0])
@@ -36,8 +36,8 @@ def measure_position_real(left_line, right_line, img_size):
     '''
     Calculates the position of the ego vehicle
     '''
-    left_fit = left_line.current_fit
-    right_fit = right_line.current_fit
+    left_fit = left_line.best_fit
+    right_fit = right_line.best_fit
 
     p_left = np.poly1d(left_fit)
     leftBottom = p_left(img_size[0])

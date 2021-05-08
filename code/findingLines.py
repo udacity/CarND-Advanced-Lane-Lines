@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 import os
 
+# Tracking length
+n = 20
+
 def find_lane_pixels(binary_warped_color):
     binary_warped = cv2.cvtColor(binary_warped_color, cv2.COLOR_BGR2GRAY)
     # Take a histogram of the bottom half of the image
@@ -96,8 +99,8 @@ def sliding_window(fname, warped, left_line, right_line, visuOn = True, writeOn 
     # Colors in the left and right lane regions
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
-    left_line.current_fit = left_fit
-    right_line.current_fit = right_fit
+    left_line.best_fit = left_fit
+    right_line.best_fit = right_fit
 
     # Generate x and y values for plotting
     ploty = np.linspace(0, warped.shape[0]-1, warped.shape[0] )
@@ -154,10 +157,30 @@ def sliding_window(fname, warped, left_line, right_line, visuOn = True, writeOn 
     return warp_zero
 
 
-def fit_poly(left_line, right_line):
-    ### Fit a second order polynomial to each with np.polyfit() ###
-    left_line.current_fit = np.polyfit(left_line.ally, left_line.allx, 2)
-    right_line.current_fit = np.polyfit(right_line.ally, right_line.allx, 2)
+def fit_poly(line, height, ploty):
+    # save last fit
+    last_fit = line.current_fit
+
+    # Fit a second order polynomial to current found points
+    line.current_fit = np.polyfit(line.ally, line.allx, 2)
+    line.diffs = line.current_fit - last_fit
+
+    # Generate x and y values
+    fitx = line.current_fit[0]*ploty**2 + line.current_fit[1]*ploty + line.current_fit[2]
+
+    # add current points on fit to list
+    line.recent_xfitted = np.append(line.recent_xfitted, fitx)
+    line.recent_yfitted = np.append(line.recent_yfitted, ploty)
+    if height*n < line.recent_xfitted.shape[0]:
+        line.recent_xfitted = line.recent_xfitted [height:]
+        line.recent_yfitted = line.recent_yfitted [height:]
+
+    # fit over the fitted n lines
+    line.best_fit = np.polyfit(line.recent_yfitted, line.recent_xfitted, 2)
+    
+    # Generate x and y values
+    line.bestx = line.best_fit[0]*ploty**2 + line.best_fit[1]*ploty + line.best_fit[2]
+
     return None
 
 def search_around_poly(fname, binary_warped, left_line, right_line, visuOn = True, writeOn = True):
@@ -175,25 +198,8 @@ def search_around_poly(fname, binary_warped, left_line, right_line, visuOn = Tru
     ### within the +/- margin of our polynomial function ###
     ### Hint: consider the window areas for the similarly named variables ###
     ### in the previous quiz, but change the windows to our new search area ###
-    # p_left = np.poly1d(left_line.current_fit)
-    # p_right = np.poly1d(right_line.current_fit)
-    
-    # # Create empty lists to receive left and right lane pixel indices
-    # left_lane_inds = []
-    # right_lane_inds = []
-    # for idx,y in enumerate(nonzeroy):
-    #     leftx_current = p_left(y)
-    #     rightx_current = p_right(y)
-    #     win_xleft_low = leftx_current - margin # Update this
-    #     win_xleft_high = leftx_current + margin  # Update this
-    #     win_xright_low = rightx_current - margin # Update this
-    #     win_xright_high = rightx_current + margin  # Update this
-    #     if nonzerox[idx] >= win_xleft_low and nonzerox[idx] < win_xleft_high:
-    #         left_lane_inds.append(idx)
-    #     if nonzerox[idx] >= win_xright_low and nonzerox[idx] < win_xright_high:
-    #         right_lane_inds.append(idx)
-    left_fit = left_line.current_fit
-    right_fit = right_line.current_fit
+    left_fit = left_line.best_fit
+    right_fit = right_line.best_fit
     left_lane_inds = ((nonzerox > (left_fit[0]*(nonzeroy**2) + left_fit[1]*nonzeroy + 
                     left_fit[2] - margin)) & (nonzerox < (left_fit[0]*(nonzeroy**2) + 
                     left_fit[1]*nonzeroy + left_fit[2] + margin)))
@@ -208,18 +214,11 @@ def search_around_poly(fname, binary_warped, left_line, right_line, visuOn = Tru
     right_line.ally = nonzeroy[right_lane_inds]
 
     # Fit new polynomials
-    fit_poly(left_line, right_line)
-    
-    ## Visualization ##
-    # Generate x and y values for plotting
     img_shape = binary_warped.shape
     ploty = np.linspace(0, img_shape[0]-1, img_shape[0])
-    ### Calc both polynomials using ploty, left_fit and right_fit ###
-    left_fit = left_line.current_fit
-    right_fit = right_line.current_fit
-    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-    
+    fit_poly(left_line, img_shape[0], ploty)
+    fit_poly(right_line, img_shape[0], ploty)
+
     # Create an image to draw on and an image to show the selection window
     #out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
     window_img = np.zeros_like(binary_warped)
@@ -244,8 +243,8 @@ def search_around_poly(fname, binary_warped, left_line, right_line, visuOn = Tru
     # cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
     # cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
     # lane
-    pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
-    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
+    pts_left = np.array([np.transpose(np.vstack([left_line.bestx, ploty]))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_line.bestx, ploty])))])
     pts = np.hstack((pts_left, pts_right))
     # Draw the lane onto the warped blank image
     cv2.fillPoly(window_img, np.int_([pts]), (0,255, 0))
