@@ -49,13 +49,12 @@ The code for this step is contained in **"./code/pipeline.py"**
 This run function gets an image as input and then applies following steps to detect the ego lane, compute curvature and calculate the ego lane:
 1. undistort the image
 2. Detect edges in color and grayscale image
-3. Perfective transform 2D image to birdsEye 
+3. Perspective transform 2D image to birdsEye
 4. If no line was detected before:
     1. Find lines newly with sliding window
     2. else find lines within previous areal (tracking)
 5. Calculate lane curvature and ego position
 6. Draw results onto image
-The results are saved to: **"output_images\06_result"**
 
 I will here explain each step and show the output for one test image.
 ![][original] 
@@ -79,7 +78,7 @@ The code for this step is contained in **"./code/binary.py"**
 ```python
     def create_binary(img, s_thresh=(170, 255), sx_thresh=(20, 100)):
 ```
-First I convert the input image into HLS color space. Onto the litheness channel the sobel edge operator is applied in x direction only. The output is scaled and threshold is applied. Additionally onto the saturation channel another threshold is applied. Both color and gradient thresholds are combined. The binary images are saved into: **"output_images\03_color_binary"**
+First I convert the input image into HLS color space. Onto the lightness channel the sobel edge operator is applied in x direction only. The output is scaled and threshold is applied. Additionally onto the saturation channel another threshold is applied. Both color and gradient thresholds are combined. The binary images are saved into: **"output_images\03_color_binary"**
 
 Undistorted             |  Binary
 :-------------------------:|:-------------------------:
@@ -106,7 +105,7 @@ dst = np.float32([[250, 100],       #topLeft
                 [250, 720],         #bottomLeft
                 [1030, 720]])       #bottomRight
 ```
-The source points are gathered from a straight road distorted image by assuming a symmetric trapezoid around the ego lane as ROI.
+The source points are gathered from a straight road undistorted image by assuming a symmetric trapezoid around the ego lane as ROI.
 ![][trapezoid]
 
 The destination points are the wished positions of the line markings of straight ego lane in the birdsEye image:
@@ -122,7 +121,7 @@ Binary             |  Warped
 ### 4. Finding lines
 The code for this step is contained in **"./code/findingLines.py"**
 
-#### 4a. Find newly lines with sliding window
+#### 4a. Find lines newly with sliding window
 The code for this step is contained in **"./code/transform.py"**
 ```python
     def sliding_window(fname, warped, left_line, right_line, visuOn = True, writeOn = True):
@@ -153,7 +152,7 @@ The code for this step is contained in **"./code/findingLines.py"**
     def fit_poly(line, height, ploty):
 ```
 
-To overcome the issue of flickering lanes we can track the lines over multiple frame. (Some kind of smoothening) The fitted lines are pushed into the lines class and stored for n (20) frames. So then we would have for the n frames the points. Over those points I calculate again a 2nd order polygon. That is then the best fitted line. For drawing the lane on the the image out of the best fitted left and right lane as mask is created additionally:
+To overcome the issue of flickering lanes we can track the lines over multiple frame. (Some kind of smoothening) The fitted lines are pushed into the lines class and stored for n (20) frames. So then we would have for the n frames the points. Over those points I calculate again a 2nd order polygon. That is then the best fitted line. For drawing the lane on the the image out of the best fitted left and right lane a mask is created additionally:
 
 warped             |  Sliding_window
 :-------------------------:|:-------------------------:
@@ -168,7 +167,9 @@ The radius of the curvature is calculated in:
 ```
 Therefore the given equation from the instructions is implemented to retrieve the radius for left and right line separately.
 ![][curvature] 
- The mean of both will be displayed in later step. For conversion from pixel to real I have retrieved the height in pixel of a dashed line:
+
+The mean of both will be displayed in later step. For conversion from pixel to real I have retrieved the height in pixel of a dashed line:
+
 ![][dashed_line] 
 
 The relative ego position within the lane is calculated in:
@@ -176,11 +177,7 @@ The relative ego position within the lane is calculated in:
     def measure_position_real(left_line, right_line, img_size):
 ```
 First the x value at the image bottom for the left and right best fit line is calculated. Then the lane center x value is calculated. With the assumption that the camera is mounted exactly in the center of the ego vehicle the image center will be also the vehicle center. So the different between lane and image center would be the vehicle offset to lane center in pixels. That is then multiplied with `xm_per_pix`. This value is gathered by looking into the pixel with of a straight line in the warped image:
-![][lane_width] 
-
-Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
-
-I did this in lines # through # in my code in `my_other_file.py`
+![][lane_width]
 
 #### 6. Draw results onto image
 The code for this step is contained in **"./code/pipeline.py"**
@@ -214,5 +211,6 @@ In general all static parameters could make a problem in different situations.
 1. The thresholds for the lightness and saturation will change for different lighting conditions (sunset, night etc.) A dynamic feedback  from the detected lines regarding HLS valus might help.
 2. The perspective transform is done with static source and destination points. Here we highly rely on a planar and static surface. But especially at hilly roads this would fail. Here it is required to detect the surface of the road and consider it in the transformation.
 3. Performing the current algorithm on the challenging video shows that differentiation between line marking as asphalt joint is not good. Here we need to differentiate if the brightness changes as "bright-dark-bright"(asphalt join) or "dark-bright-dark"(line marking)
-4. Currently I am tracking the lines over 20 Frames which helps to reduce false detection on highways. But as seen in the challenging videos on rural roads the road  curvature is much more dynamic. So we cannot track the the lines like this and make them so stiff. We need a mechanism to make the tracking length dependant on the detection quality.
+4. Currently I am tracking the lines over 20 Frames which helps to reduce false detection on highways. But as seen in the challenging videos on rural roads the road  curvature is much more dynamic. So we cannot track the the lines like this and make them so stiff. We need a mechanism to make the tracking length dependant on the detection quality. As well we can make the margin in which new lines are searched bigger in the far distance than in the nearer distance.
+5. As the lane will have tangential the same lane width. We can use to bind left and right line marking like this. That would make the lines mor parallel.
 
