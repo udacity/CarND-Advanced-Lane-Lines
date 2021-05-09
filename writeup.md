@@ -28,12 +28,6 @@ The goals / steps of this project are the following:
 [lane_width]: ./doc/lane_width.png "lane_width"
 [dashed_line]: ./doc/dashed_line.png "dashed_line"
 [output]: ./output_images/06_result/test5.png "output"
-[image2]: ./test_images/test1.jpg "Road Transformed"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
 
 ## Camera Calibration
 
